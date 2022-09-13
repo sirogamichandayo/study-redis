@@ -11,41 +11,45 @@ import (
 func main() {
 }
 
-func log_common(ctx context.Context, client *redis.Client, lm *domain.LogMessage) error {
+func StoreLog(ctx context.Context, client *redis.Client, lm *domain.LogMessage) error {
 	name, level := lm.Name(), lm.Level()
 	fl := repository.FrequencyLog{}
 
 	txf := func(tx *redis.Tx) error {
-		str, getErr := fl.GetMakeAt(ctx, tx, name, level)
-		if getErr != nil {
-			return getErr
+		rawUpdatedAt, sErr := fl.GetUpdatedAt(ctx, tx, name, level)
+		if sErr != nil && sErr != redis.Nil {
+			return sErr
 		}
 
-		if getErr != redis.Nil {
-			storedMakeAt, parseErr := domain.ParseLogMessageMakeAt(str)
-			if parseErr != nil {
-				return parseErr
-			}
+		updatedAt, uErr := domain.NewFrequencyLogUpdatedAt(rawUpdatedAt)
+		if uErr != nil {
+			return nil
+		}
 
-			if lm.Before(storedMakeAt) {
-				ok, aErr := fl.Archive(ctx, tx, name, level)
+		_, pErr := tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
+			if updatedAt.ShouldArchive() {
+				ok, err := fl.Archive(ctx, pipe, name, level)
+				if err != nil {
+					return err
+				}
+				if !ok {
+					return errors.New("failed archive")
+				}
+				newUpdatedAt, aErr := domain.NewFrequencyLogUpdatedAt(lm.MakeAt().Time())
 				if aErr != nil {
 					return aErr
 				}
-				if !ok {
-					return errors.New("failed archiving")
-				}
-				if sErr := fl.SetMakeAt(ctx, tx, lm); sErr != nil {
-					return sErr
-				}
-			}
-		}
 
-		return fl.IncrFrequencyCount(ctx, tx, lm)
+				return fl.SetUpdatedAt(ctx, pipe, name, level, newUpdatedAt)
+			}
+
+			return fl.IncrCount(ctx, pipe, lm)
+		})
+		return pErr
 	}
 
 	for i := 0; i < 100; i++ {
-		err := client.Watch(ctx, txf, fl.CommonStartKey(name, level))
+		err := fl.WatchMakeAtKey(ctx, client, txf, name, level)
 		if err == nil {
 			return nil
 		}

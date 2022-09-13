@@ -2,13 +2,13 @@ package domain
 
 import "time"
 
-const makeAtFormat = "2006-01-02"
+const makeAtFormat = time.RFC3339
 
 type LogMessageMakeAt struct {
-	t time.Time
+	t *time.Time
 }
 
-func (mt *LogMessageMakeAt) Time() time.Time {
+func (mt *LogMessageMakeAt) Time() *time.Time {
 	return mt.t
 }
 
@@ -16,17 +16,30 @@ func (mt *LogMessageMakeAt) String() string {
 	return mt.t.Format(makeAtFormat)
 }
 
-func (mt *LogMessageMakeAt) Before(t *LogMessageMakeAt) bool {
-	return mt.t.Before(t.t)
+const frequencyLogUpdatedAtFormat = "2006-01-02 15"
+
+type FrequencyLogUpdatedAt struct {
+	t time.Time
 }
 
-func ParseLogMessageMakeAt(value string) (*LogMessageMakeAt, error) {
-	jst, err := time.LoadLocation("Asia/Tokyo")
-	if err != nil {
-		return nil, err
+func NewFrequencyLogUpdatedAt(t *time.Time) (*FrequencyLogUpdatedAt, error) {
+	jst, e := time.LoadLocation("Asia/Tokyo")
+	if e != nil {
+		return nil, e
 	}
-	t, err := time.ParseInLocation(makeAtFormat, value, jst)
-	return &LogMessageMakeAt{t}, nil
+	ti := time.Date(
+		t.Year(), t.Month(), t.Day(), t.Hour(), 0, 0, 0, jst,
+	)
+	return &FrequencyLogUpdatedAt{ti}, nil
+}
+
+func (mt *FrequencyLogUpdatedAt) String() string {
+	return mt.t.Format(frequencyLogUpdatedAtFormat)
+}
+
+func (mt *FrequencyLogUpdatedAt) ShouldArchive() bool {
+	return true
+	// return mt.t.After(at.t)
 }
 
 type LogMessage struct {
@@ -38,20 +51,11 @@ type LogMessage struct {
 
 func NewLogMessage(name string, message string, severity LogLevel) *LogMessage {
 	n := time.Now()
+	t := time.Date(n.Year(), n.Month(), n.Day(), 0, 0, 0, 0, n.Location())
 	return &LogMessage{
 		name, message, severity,
-		&LogMessageMakeAt{time.Date(n.Year(), n.Month(), n.Day(), 0, 0, 0, 0, n.Location())},
+		&LogMessageMakeAt{&t},
 	}
-}
-
-func Reconstruct(name string, message string, level LogLevel, makeAt string) (*LogMessage, error) {
-	m, err := ParseLogMessageMakeAt(makeAt)
-	if err != nil {
-		return nil, err
-	}
-	return &LogMessage{
-		name, message, level, m,
-	}, nil
 }
 
 func (l LogMessage) Name() string {
@@ -68,9 +72,4 @@ func (l LogMessage) Level() LogLevel {
 
 func (l LogMessage) MakeAt() *LogMessageMakeAt {
 	return l.makeAt
-}
-
-// Before is l.makeAt > mt
-func (l LogMessage) Before(mt *LogMessageMakeAt) bool {
-	return l.makeAt.Before(mt)
 }
