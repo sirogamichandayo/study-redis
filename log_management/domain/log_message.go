@@ -45,7 +45,7 @@ func (mt *FrequencyLogUpdatedAt) ShouldArchive() bool {
 type LogMessage struct {
 	name    string
 	message string
-	level   LogLevel
+	level   *LogLevel
 	makeAt  *LogMessageMakeAt
 }
 
@@ -53,7 +53,7 @@ func NewLogMessage(name string, message string, severity LogLevel) *LogMessage {
 	n := time.Now()
 	t := time.Date(n.Year(), n.Month(), n.Day(), 0, 0, 0, 0, n.Location())
 	return &LogMessage{
-		name, message, severity,
+		name, message, &severity,
 		&LogMessageMakeAt{&t},
 	}
 }
@@ -66,7 +66,7 @@ func (l LogMessage) Message() string {
 	return l.message
 }
 
-func (l LogMessage) Level() LogLevel {
+func (l LogMessage) Level() *LogLevel {
 	return l.level
 }
 

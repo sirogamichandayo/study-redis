@@ -4,16 +4,33 @@ import (
 	"context"
 	"errors"
 	"github.com/go-redis/redis/v8"
+	"log_management/adapter/kvs"
 	"log_management/domain"
 	"log_management/domain/repository"
 )
 
 func main() {
+	c := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+	ctx := context.Background()
+	fl := kvs.NewFrequencyLogImpl()
+	lm := domain.NewLogMessage(
+		"name",
+		"this is test",
+		domain.Warning,
+	)
+
+	err := StoreLog(ctx, fl, c, lm)
+	if err != nil {
+		panic(err)
+	}
 }
 
-func StoreLog(ctx context.Context, client *redis.Client, lm *domain.LogMessage) error {
+func StoreLog(ctx context.Context, fl repository.FrequencyLogInterface, client *redis.Client, lm *domain.LogMessage) error {
 	name, level := lm.Name(), lm.Level()
-	fl := repository.FrequencyLog{}
 
 	txf := func(tx *redis.Tx) error {
 		rawUpdatedAt, sErr := fl.GetUpdatedAt(ctx, tx, name, level)
@@ -28,12 +45,19 @@ func StoreLog(ctx context.Context, client *redis.Client, lm *domain.LogMessage) 
 
 		_, pErr := tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
 			if updatedAt.ShouldArchive() {
-				ok, err := fl.Archive(ctx, pipe, name, level)
+				uOk, err := fl.ArchiveUpdatedAt(ctx, pipe, name, level)
 				if err != nil {
 					return err
 				}
-				if !ok {
-					return errors.New("failed archive")
+				if !uOk {
+					return errors.New("failed archive updated at")
+				}
+				cOk, err := fl.ArchiveCount(ctx, pipe, name, level)
+				if err != nil {
+					return err
+				}
+				if !cOk {
+					return errors.New("failed archive count")
 				}
 				newUpdatedAt, aErr := domain.NewFrequencyLogUpdatedAt(lm.MakeAt().Time())
 				if aErr != nil {
