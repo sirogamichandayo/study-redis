@@ -7,15 +7,21 @@ import (
 	"log_management/adapter/kvs"
 	"log_management/domain"
 	"log_management/domain/repository"
+	"time"
 )
 
 func main() {
+	ctx := context.Background()
 	c := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "",
 		DB:       0,
 	})
-	ctx := context.Background()
+
+	if err := c.Ping(ctx).Err(); err != nil {
+		panic(err)
+	}
+
 	fl := kvs.NewFrequencyLogImpl()
 	lm := domain.NewLogMessage(
 		"name",
@@ -37,14 +43,26 @@ func StoreLog(ctx context.Context, fl repository.FrequencyLogInterface, client *
 		if sErr != nil && sErr != redis.Nil {
 			return sErr
 		}
-
+		if sErr == redis.Nil {
+			rawUpdatedAt = time.Now()
+		}
 		updatedAt, uErr := domain.NewFrequencyLogUpdatedAt(rawUpdatedAt)
 		if uErr != nil {
 			return nil
 		}
 
 		_, pErr := tx.TxPipelined(ctx, func(pipe redis.Pipeliner) error {
-			if updatedAt.ShouldArchive() {
+			if sErr == redis.Nil {
+				if suErr := fl.SetUpdatedAt(ctx, pipe, name, level, updatedAt); suErr != nil {
+					return suErr
+				}
+			}
+
+			shouldArchive, sErr := updatedAt.ShouldArchive(lm.MakeAt().Time())
+			if sErr != nil {
+				return sErr
+			}
+			if shouldArchive {
 				uOk, err := fl.ArchiveUpdatedAt(ctx, pipe, name, level)
 				if err != nil {
 					return err
@@ -64,7 +82,9 @@ func StoreLog(ctx context.Context, fl repository.FrequencyLogInterface, client *
 					return aErr
 				}
 
-				return fl.SetUpdatedAt(ctx, pipe, name, level, newUpdatedAt)
+				if sErr := fl.SetUpdatedAt(ctx, pipe, name, level, newUpdatedAt); sErr != nil {
+					return sErr
+				}
 			}
 
 			return fl.IncrCount(ctx, pipe, lm)

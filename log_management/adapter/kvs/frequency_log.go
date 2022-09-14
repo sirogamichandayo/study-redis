@@ -15,17 +15,17 @@ func NewFrequencyLogImpl() *FrequencyLogImpl {
 	return &FrequencyLogImpl{}
 }
 
-func (fl *FrequencyLogImpl) GetUpdatedAt(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) (*time.Time, error) {
+func (fl *FrequencyLogImpl) GetUpdatedAt(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) (time.Time, error) {
 	t, err := cmd.Get(ctx, fl.updatedAtKey(name, level)).Time()
 	if err != nil {
-		return nil, err
+		return time.Time{}, err
 	}
-	return &t, nil
+	return t, nil
 }
 
 func (fl *FrequencyLogImpl) SetUpdatedAt(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel, u *domain.FrequencyLogUpdatedAt) error {
 	key := fl.updatedAtKey(name, level)
-	return cmd.Set(ctx, key, u.String(), 0).Err()
+	return cmd.Set(ctx, key, u.Time(), 0).Err()
 }
 
 func (fl *FrequencyLogImpl) IncrCount(ctx context.Context, cmd redis.Cmdable, lm *domain.LogMessage) error {
