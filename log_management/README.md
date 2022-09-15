@@ -8,6 +8,7 @@
 * メッセージ(message)
 * レベル(level)
 
-### 実装の話
+### 実装
 
-ドメインサービスとして受け取ったログを保存する。（まだ検討中）
+main.goの`StoreLog`関数
+https://github.com/sirogamichandayo/study-redis/blob/main/log_management/main.go#L39
