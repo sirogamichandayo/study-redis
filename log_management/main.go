@@ -23,23 +23,24 @@ func main() {
 	}
 
 	fl := kvs.NewFrequencyLogImpl()
-	redTime := redTime.TimeImpl{}
 	lm := domain.NewLogMessage(
 		"name",
 		"this is test",
 		domain.Warning,
 	)
 
-	err := StoreLog(ctx, fl, c, lm, redTime)
+	err := StoreLog(ctx, fl, c, lm, &redTime.TimeImpl{})
 	if err != nil {
 		panic(err)
 	}
 }
 
+const storeLogMaxRetries = 30
+
 func StoreLog(ctx context.Context, fl repository.FrequencyLogInterface, client *redis.Client, lm *domain.LogMessage, redTime redTime.ITime) error {
 	name, level := lm.Name(), lm.Level()
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < storeLogMaxRetries; i++ {
 		err := fl.WatchMakeAtKey(
 			ctx,
 			client,
