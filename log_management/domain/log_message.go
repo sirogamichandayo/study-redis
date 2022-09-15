@@ -34,9 +34,8 @@ func (mt *FrequencyLogUpdatedAt) Time() time.Time {
 }
 
 func (mt *FrequencyLogUpdatedAt) ShouldArchive(now time.Time) (bool, error) {
-	return mt.t.After(
-		time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 0, 0, 0, time.FixedZone("Asia/Tokyo", 9*60*60)),
-	), nil
+	t := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 0, 0, 0, time.FixedZone("Asia/Tokyo", 9*60*60))
+	return mt.t.Before(t), nil
 }
 
 type LogMessage struct {

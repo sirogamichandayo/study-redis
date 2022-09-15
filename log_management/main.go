@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"log_management/adapter/kvs"
 	"log_management/domain"
 	"log_management/domain/repository"
-	"time"
+	redTime "log_management/tools/red_time"
 )
 
 func main() {
@@ -23,28 +24,57 @@ func main() {
 	}
 
 	fl := kvs.NewFrequencyLogImpl()
+	redTime := redTime.TimeImpl{}
 	lm := domain.NewLogMessage(
 		"name",
 		"this is test",
 		domain.Warning,
 	)
 
-	err := StoreLog(ctx, fl, c, lm)
+	err := StoreLog(ctx, fl, c, lm, redTime)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func StoreLog(ctx context.Context, fl repository.FrequencyLogInterface, client *redis.Client, lm *domain.LogMessage) error {
+func StoreLog(ctx context.Context, fl repository.FrequencyLogInterface, client *redis.Client, lm *domain.LogMessage, redTime redTime.ITime) error {
 	name, level := lm.Name(), lm.Level()
 
-	txf := func(tx *redis.Tx) error {
+	for i := 0; i < 100; i++ {
+		err := fl.WatchMakeAtKey(
+			ctx,
+			client,
+			makeStoreLogFunc(ctx, fl, lm, redTime),
+			name,
+			level,
+		)
+		if err == nil {
+			return nil
+		}
+		if err == redis.TxFailedErr {
+			continue
+		}
+		return err
+	}
+
+	return errors.New("increment reached maximum number of retries")
+}
+
+func makeStoreLogFunc(
+	ctx context.Context,
+	fl repository.FrequencyLogInterface,
+	lm *domain.LogMessage,
+	redTime redTime.ITime,
+) func(tx *redis.Tx) error {
+	name, level := lm.Name(), lm.Level()
+
+	return func(tx *redis.Tx) error {
 		rawUpdatedAt, sErr := fl.GetUpdatedAt(ctx, tx, name, level)
 		if sErr != nil && sErr != redis.Nil {
 			return sErr
 		}
 		if sErr == redis.Nil {
-			rawUpdatedAt = time.Now()
+			rawUpdatedAt = redTime.Now()
 		}
 		updatedAt, uErr := domain.NewFrequencyLogUpdatedAt(rawUpdatedAt)
 		if uErr != nil {
@@ -62,6 +92,7 @@ func StoreLog(ctx context.Context, fl repository.FrequencyLogInterface, client *
 			if sErr != nil {
 				return sErr
 			}
+			fmt.Println(shouldArchive)
 			if shouldArchive {
 				uOk, err := fl.ArchiveUpdatedAt(ctx, pipe, name, level)
 				if err != nil {
@@ -91,17 +122,4 @@ func StoreLog(ctx context.Context, fl repository.FrequencyLogInterface, client *
 		})
 		return pErr
 	}
-
-	for i := 0; i < 100; i++ {
-		err := fl.WatchMakeAtKey(ctx, client, txf, name, level)
-		if err == nil {
-			return nil
-		}
-		if err == redis.TxFailedErr {
-			continue
-		}
-		return err
-	}
-
-	return errors.New("increment reached maximum number of retries")
 }

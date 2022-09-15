@@ -10,7 +10,7 @@ import (
 	reflect "reflect"
 	time "time"
 
-	v8 "github.com/go-redis/redis/v8"
+	redis "github.com/go-redis/redis/v8"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -38,7 +38,7 @@ func (m *MockFrequencyLogInterface) EXPECT() *MockFrequencyLogInterfaceMockRecor
 }
 
 // ArchiveCount mocks base method.
-func (m *MockFrequencyLogInterface) ArchiveCount(ctx context.Context, cmd v8.Cmdable, name string, level *domain.LogLevel) (bool, error) {
+func (m *MockFrequencyLogInterface) ArchiveCount(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ArchiveCount", ctx, cmd, name, level)
 	ret0, _ := ret[0].(bool)
@@ -53,7 +53,7 @@ func (mr *MockFrequencyLogInterfaceMockRecorder) ArchiveCount(ctx, cmd, name, le
 }
 
 // ArchiveUpdatedAt mocks base method.
-func (m *MockFrequencyLogInterface) ArchiveUpdatedAt(ctx context.Context, cmd v8.Cmdable, name string, level *domain.LogLevel) (bool, error) {
+func (m *MockFrequencyLogInterface) ArchiveUpdatedAt(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) (bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ArchiveUpdatedAt", ctx, cmd, name, level)
 	ret0, _ := ret[0].(bool)
@@ -68,7 +68,7 @@ func (mr *MockFrequencyLogInterfaceMockRecorder) ArchiveUpdatedAt(ctx, cmd, name
 }
 
 // GetUpdatedAt mocks base method.
-func (m *MockFrequencyLogInterface) GetUpdatedAt(ctx context.Context, cmd v8.Cmdable, name string, level *domain.LogLevel) (time.Time, error) {
+func (m *MockFrequencyLogInterface) GetUpdatedAt(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) (time.Time, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUpdatedAt", ctx, cmd, name, level)
 	ret0, _ := ret[0].(time.Time)
@@ -83,7 +83,7 @@ func (mr *MockFrequencyLogInterfaceMockRecorder) GetUpdatedAt(ctx, cmd, name, le
 }
 
 // IncrCount mocks base method.
-func (m *MockFrequencyLogInterface) IncrCount(ctx context.Context, cmd v8.Cmdable, lm *domain.LogMessage) error {
+func (m *MockFrequencyLogInterface) IncrCount(ctx context.Context, cmd redis.Cmdable, lm *domain.LogMessage) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IncrCount", ctx, cmd, lm)
 	ret0, _ := ret[0].(error)
@@ -97,7 +97,7 @@ func (mr *MockFrequencyLogInterfaceMockRecorder) IncrCount(ctx, cmd, lm interfac
 }
 
 // SetUpdatedAt mocks base method.
-func (m *MockFrequencyLogInterface) SetUpdatedAt(ctx context.Context, cmd v8.Cmdable, name string, level *domain.LogLevel, u *domain.FrequencyLogUpdatedAt) error {
+func (m *MockFrequencyLogInterface) SetUpdatedAt(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel, u *domain.FrequencyLogUpdatedAt) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetUpdatedAt", ctx, cmd, name, level, u)
 	ret0, _ := ret[0].(error)
@@ -111,7 +111,7 @@ func (mr *MockFrequencyLogInterfaceMockRecorder) SetUpdatedAt(ctx, cmd, name, le
 }
 
 // WatchMakeAtKey mocks base method.
-func (m *MockFrequencyLogInterface) WatchMakeAtKey(ctx context.Context, client v8.UniversalClient, fn func(*v8.Tx) error, name string, level *domain.LogLevel) error {
+func (m *MockFrequencyLogInterface) WatchMakeAtKey(ctx context.Context, client redis.UniversalClient, fn func(*redis.Tx) error, name string, level *domain.LogLevel) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WatchMakeAtKey", ctx, client, fn, name, level)
 	ret0, _ := ret[0].(error)
