@@ -32,18 +32,18 @@ func (fl *FrequencyLogImpl) IncrCount(ctx context.Context, cmd redis.Cmdable, lm
 	return cmd.ZIncrBy(ctx, fl.countKey(lm.Name(), lm.Level()), 1, lm.Message()).Err()
 }
 
-func (fl *FrequencyLogImpl) ArchiveUpdatedAt(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) (bool, error) {
-	return cmd.RenameNX(ctx,
+func (fl *FrequencyLogImpl) ArchiveUpdatedAt(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) error {
+	return cmd.Rename(ctx,
 		fl.updatedAtKey(name, level),
 		fl.archiveUpdatedAtKey(name, level),
-	).Result()
+	).Err()
 }
 
-func (fl *FrequencyLogImpl) ArchiveCount(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) (bool, error) {
-	return cmd.RenameNX(ctx,
+func (fl *FrequencyLogImpl) ArchiveCount(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) error {
+	return cmd.Rename(ctx,
 		fl.countKey(name, level),
 		fl.archiveCountKey(name, level),
-	).Result()
+	).Err()
 }
 
 func (fl *FrequencyLogImpl) WatchMakeAtKey(ctx context.Context, client redis.UniversalClient, fn func(*redis.Tx) error, name string, level *domain.LogLevel) error {

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/go-redis/redis/v8"
 	"log_management/adapter/kvs"
 	"log_management/domain"
@@ -92,27 +91,17 @@ func makeStoreLogFunc(
 			if sErr != nil {
 				return sErr
 			}
-			fmt.Println(shouldArchive)
 			if shouldArchive {
-				uOk, err := fl.ArchiveUpdatedAt(ctx, pipe, name, level)
-				if err != nil {
+				if err := fl.ArchiveUpdatedAt(ctx, pipe, name, level); err != nil {
 					return err
 				}
-				if !uOk {
-					return errors.New("failed archive updated at")
-				}
-				cOk, err := fl.ArchiveCount(ctx, pipe, name, level)
-				if err != nil {
+				if err := fl.ArchiveCount(ctx, pipe, name, level); err != nil {
 					return err
-				}
-				if !cOk {
-					return errors.New("failed archive count")
 				}
 				newUpdatedAt, aErr := domain.NewFrequencyLogUpdatedAt(lm.MakeAt().Time())
 				if aErr != nil {
 					return aErr
 				}
-
 				if sErr := fl.SetUpdatedAt(ctx, pipe, name, level, newUpdatedAt); sErr != nil {
 					return sErr
 				}

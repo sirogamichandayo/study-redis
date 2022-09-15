@@ -25,7 +25,7 @@ func Test正常系_StoreLog(t *testing.T) {
 
 	ctx := context.Background()
 	flMock := mock_repository.NewMockFrequencyLogInterface(ctrl)
-	client, err := test_tools.MakeFakeClient(t)
+	client, err := test_tools.MakeFakeClient()
 	assert.Nil(t, err)
 	redTimeMock := mock_redTime.NewMockITime(ctrl)
 	lm := domain.NewLogMessage(name, message, level)
@@ -52,7 +52,7 @@ func Test異常系_StoreLog_99回TxFailedErrが帰って来て最後の1回が�
 
 	ctx := context.Background()
 	flMock := mock_repository.NewMockFrequencyLogInterface(ctrl)
-	client, err := test_tools.MakeFakeClient(t)
+	client, err := test_tools.MakeFakeClient()
 	assert.Nil(t, err)
 	lm := domain.NewLogMessage(name, message, level)
 	redTimeMock := mock_redTime.NewMockITime(ctrl)
@@ -81,7 +81,7 @@ func Test異常系_StoreLog_エラーが返却される(t *testing.T) {
 
 	ctx := context.Background()
 	flMock := mock_repository.NewMockFrequencyLogInterface(ctrl)
-	client, err := test_tools.MakeFakeClient(t)
+	client, err := test_tools.MakeFakeClient()
 	assert.Nil(t, err)
 	lm := domain.NewLogMessage(name, message, level)
 	redTimeMock := mock_redTime.NewMockITime(ctrl)
@@ -108,7 +108,7 @@ func Test正常系_makeStoreLog初めての呼び出し(t *testing.T) {
 	lm := domain.NewLogMessage(name, message, level)
 
 	flMock := mock_repository.NewMockFrequencyLogInterface(ctrl)
-	client, err := test_tools.MakeFakeClient(t)
+	client, err := test_tools.MakeFakeClient()
 	assert.Nil(t, err)
 	redTimeMock := mock_redTime.NewMockITime(ctrl)
 
@@ -152,7 +152,7 @@ func Test正常系_makeStoreLogアーカイブ処理(t *testing.T) {
 	lm := domain.NewLogMessage(name, message, level)
 
 	flMock := mock_repository.NewMockFrequencyLogInterface(ctrl)
-	client, err := test_tools.MakeFakeClient(t)
+	client, err := test_tools.MakeFakeClient()
 	assert.Nil(t, err)
 	redTimeMock := mock_redTime.NewMockITime(ctrl)
 
@@ -166,9 +166,9 @@ func Test正常系_makeStoreLogアーカイブ処理(t *testing.T) {
 		flMock.EXPECT().GetUpdatedAt(ctx, gomock.AssignableToTypeOf(&redis.Tx{}), name, &level).
 			Times(1).Return(beforeUpdatedAt, nil),
 		flMock.EXPECT().ArchiveUpdatedAt(ctx, gomock.AssignableToTypeOf(&redis.Pipeline{}), name, &level).
-			Times(1).Return(true, nil),
+			Times(1).Return(nil),
 		flMock.EXPECT().ArchiveCount(ctx, gomock.AssignableToTypeOf(&redis.Pipeline{}), name, &level).
-			Times(1).Return(true, nil),
+			Times(1).Return(nil),
 		flMock.EXPECT().SetUpdatedAt(
 			ctx,
 			gomock.AssignableToTypeOf(&redis.Pipeline{}),

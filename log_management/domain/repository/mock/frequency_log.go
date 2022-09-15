@@ -38,12 +38,11 @@ func (m *MockFrequencyLogInterface) EXPECT() *MockFrequencyLogInterfaceMockRecor
 }
 
 // ArchiveCount mocks base method.
-func (m *MockFrequencyLogInterface) ArchiveCount(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) (bool, error) {
+func (m *MockFrequencyLogInterface) ArchiveCount(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ArchiveCount", ctx, cmd, name, level)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ArchiveCount indicates an expected call of ArchiveCount.
@@ -53,12 +52,11 @@ func (mr *MockFrequencyLogInterfaceMockRecorder) ArchiveCount(ctx, cmd, name, le
 }
 
 // ArchiveUpdatedAt mocks base method.
-func (m *MockFrequencyLogInterface) ArchiveUpdatedAt(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) (bool, error) {
+func (m *MockFrequencyLogInterface) ArchiveUpdatedAt(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ArchiveUpdatedAt", ctx, cmd, name, level)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // ArchiveUpdatedAt indicates an expected call of ArchiveUpdatedAt.

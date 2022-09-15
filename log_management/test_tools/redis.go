@@ -3,10 +3,9 @@ package test_tools
 import (
 	"github.com/alicebob/miniredis"
 	"github.com/go-redis/redis/v8"
-	"testing"
 )
 
-func MakeFakeClient(t *testing.T) (*redis.Client, error) {
+func MakeFakeClient() (*redis.Client, error) {
 	r, err := miniredis.Run()
 	if err != nil {
 		return nil, err
