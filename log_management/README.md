@@ -9,7 +9,16 @@ https://github.com/sirogamichandayo/study-redis/blob/main/log_management/main.go
 **ログの取得**
 * todo
 
+---
+
 ### ログの内容
 * 名前(name)
 * メッセージ(message)
 * レベル(level)
+
+---
+
+### 補足
+
+保存はクリーンアーキテクチャに組み込むならドメインサービスにすると思う。
+取得の方はユースケースで呼び出す形になると思う。
