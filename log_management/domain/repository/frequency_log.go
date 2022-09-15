@@ -14,5 +14,5 @@ type FrequencyLogInterface interface {
 	IncrCount(ctx context.Context, cmd redis.Cmdable, lm *domain.LogMessage) error
 	ArchiveUpdatedAt(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) error
 	ArchiveCount(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) error
-	WatchUpdatedAtKey(ctx context.Context, client redis.UniversalClient, fn func(*redis.Tx) error, name string, level *domain.LogLevel) error
+	WatchUpdatedAt(ctx context.Context, client redis.UniversalClient, fn func(*redis.Tx) error, name string, level *domain.LogLevel) error
 }

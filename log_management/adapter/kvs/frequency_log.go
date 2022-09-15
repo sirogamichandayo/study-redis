@@ -46,7 +46,7 @@ func (fl *FrequencyLogImpl) ArchiveCount(ctx context.Context, cmd redis.Cmdable,
 	).Err()
 }
 
-func (fl *FrequencyLogImpl) WatchUpdatedAtKey(ctx context.Context, client redis.UniversalClient, fn func(*redis.Tx) error, name string, level *domain.LogLevel) error {
+func (fl *FrequencyLogImpl) WatchUpdatedAt(ctx context.Context, client redis.UniversalClient, fn func(*redis.Tx) error, name string, level *domain.LogLevel) error {
 	return client.Watch(ctx, fn, fl.updatedAtKey(name, level))
 }
 
