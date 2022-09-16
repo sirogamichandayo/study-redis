@@ -62,13 +62,16 @@ func (f FrequencyLogCount) Count() int {
 	return f.count
 }
 
+func MakeFrequencyLogFromModel(name string, level *LogLevel, lmc *model.LogMessageCount) *FrequencyLogCount {
+	return &FrequencyLogCount{
+		name, lmc.Message(), level, lmc.Count(),
+	}
+}
+
 func MakeFrequencyLogFromModelList(name string, level *LogLevel, lmcList []*model.LogMessageCount) []*FrequencyLogCount {
 	lc := make([]*FrequencyLogCount, 0, len(lmcList))
 	for _, lmc := range lmcList {
-		tmp := &FrequencyLogCount{
-			name, lmc.Message(), level, lmc.Count(),
-		}
-		lc = append(lc, tmp)
+		lc = append(lc, MakeFrequencyLogFromModel(name, level, lmc))
 	}
 	return lc
 }

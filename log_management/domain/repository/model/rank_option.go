@@ -20,3 +20,7 @@ func NewRankOption(start, stop int64) *RankOption {
 func NewAllRankOption() *RankOption {
 	return &RankOption{0, -1}
 }
+
+func NewMostFrequentOption() *RankOption {
+	return &RankOption{-2, -1}
+}
