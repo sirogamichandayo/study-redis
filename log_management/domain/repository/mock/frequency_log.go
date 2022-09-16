@@ -7,6 +7,7 @@ package mock_repository
 import (
 	context "context"
 	domain "log_management/domain"
+	model "log_management/domain/repository/model"
 	reflect "reflect"
 	time "time"
 
@@ -65,6 +66,21 @@ func (mr *MockFrequencyLogInterfaceMockRecorder) ArchiveUpdatedAt(ctx, cmd, name
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ArchiveUpdatedAt", reflect.TypeOf((*MockFrequencyLogInterface)(nil).ArchiveUpdatedAt), ctx, cmd, name, level)
 }
 
+// GetCountsByRank mocks base method.
+func (m *MockFrequencyLogInterface) GetCountsByRank(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel, op *model.RankOption) ([]*model.LogMessageCount, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCountsByRank", ctx, cmd, name, level, op)
+	ret0, _ := ret[0].([]*model.LogMessageCount)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCountsByRank indicates an expected call of GetCountsByRank.
+func (mr *MockFrequencyLogInterfaceMockRecorder) GetCountsByRank(ctx, cmd, name, level, op interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCountsByRank", reflect.TypeOf((*MockFrequencyLogInterface)(nil).GetCountsByRank), ctx, cmd, name, level, op)
+}
+
 // GetUpdatedAt mocks base method.
 func (m *MockFrequencyLogInterface) GetUpdatedAt(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) (time.Time, error) {
 	m.ctrl.T.Helper()
@@ -108,16 +124,16 @@ func (mr *MockFrequencyLogInterfaceMockRecorder) SetUpdatedAt(ctx, cmd, name, le
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUpdatedAt", reflect.TypeOf((*MockFrequencyLogInterface)(nil).SetUpdatedAt), ctx, cmd, name, level, u)
 }
 
-// WatchMakeAtKey mocks base method.
-func (m *MockFrequencyLogInterface) WatchMakeAtKey(ctx context.Context, client redis.UniversalClient, fn func(*redis.Tx) error, name string, level *domain.LogLevel) error {
+// WatchUpdatedAt mocks base method.
+func (m *MockFrequencyLogInterface) WatchUpdatedAt(ctx context.Context, client redis.UniversalClient, fn func(*redis.Tx) error, name string, level *domain.LogLevel) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "WatchMakeAtKey", ctx, client, fn, name, level)
+	ret := m.ctrl.Call(m, "WatchUpdatedAt", ctx, client, fn, name, level)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// WatchMakeAtKey indicates an expected call of WatchMakeAtKey.
-func (mr *MockFrequencyLogInterfaceMockRecorder) WatchMakeAtKey(ctx, client, fn, name, level interface{}) *gomock.Call {
+// WatchUpdatedAt indicates an expected call of WatchUpdatedAt.
+func (mr *MockFrequencyLogInterfaceMockRecorder) WatchUpdatedAt(ctx, client, fn, name, level interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WatchMakeAtKey", reflect.TypeOf((*MockFrequencyLogInterface)(nil).WatchMakeAtKey), ctx, client, fn, name, level)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WatchUpdatedAt", reflect.TypeOf((*MockFrequencyLogInterface)(nil).WatchUpdatedAt), ctx, client, fn, name, level)
 }

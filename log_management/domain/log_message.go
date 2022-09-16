@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"log_management/domain/repository/model"
 	"time"
 )
 
@@ -36,6 +37,40 @@ func (mt *FrequencyLogUpdatedAt) Time() time.Time {
 func (mt *FrequencyLogUpdatedAt) ShouldArchive(now time.Time) (bool, error) {
 	t := time.Date(now.Year(), now.Month(), now.Day(), now.Hour(), 0, 0, 0, time.FixedZone("Asia/Tokyo", 9*60*60))
 	return mt.t.Before(t), nil
+}
+
+type FrequencyLogCount struct {
+	name    string
+	message string
+	level   *LogLevel
+	count   int
+}
+
+func (f FrequencyLogCount) Name() string {
+	return f.name
+}
+
+func (f FrequencyLogCount) Message() string {
+	return f.message
+}
+
+func (f FrequencyLogCount) Level() *LogLevel {
+	return f.level
+}
+
+func (f FrequencyLogCount) Count() int {
+	return f.count
+}
+
+func MakeFrequencyLogFromModelList(name string, level *LogLevel, lmcList []*model.LogMessageCount) []*FrequencyLogCount {
+	lc := make([]*FrequencyLogCount, 0, len(lmcList))
+	for _, lmc := range lmcList {
+		tmp := &FrequencyLogCount{
+			name, lmc.Message(), level, lmc.Count(),
+		}
+		lc = append(lc, tmp)
+	}
+	return lc
 }
 
 type LogMessage struct {

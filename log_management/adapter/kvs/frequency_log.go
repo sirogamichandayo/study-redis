@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"log_management/domain"
+	"log_management/domain/repository/model"
 	"time"
 )
 
@@ -30,6 +31,14 @@ func (fl *FrequencyLogImpl) SetUpdatedAt(ctx context.Context, cmd redis.Cmdable,
 
 func (fl *FrequencyLogImpl) IncrCount(ctx context.Context, cmd redis.Cmdable, lm *domain.LogMessage) error {
 	return cmd.ZIncrBy(ctx, fl.countKey(lm.Name(), lm.Level()), 1, lm.Message()).Err()
+}
+
+func (fl *FrequencyLogImpl) GetCountsByRank(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel, op *model.RankOption) ([]*model.LogMessageCount, error) {
+	zList, err := cmd.ZRangeWithScores(ctx, fl.countKey(name, level), op.Start(), op.Stop()).Result()
+	if err != nil {
+		return nil, err
+	}
+	return model.MakeLogCountListFromZ(zList)
 }
 
 func (fl *FrequencyLogImpl) ArchiveUpdatedAt(ctx context.Context, cmd redis.Cmdable, name string, level *domain.LogLevel) error {
